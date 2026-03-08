@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Monitoring - Guardian Net</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-shield-alt"></i>
+                <span>Guardian Net</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard.html">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/patients.html">
+                    <i class="fas fa-users"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="/monitor.html" class="active">
+                    <i class="fas fa-video"></i>
+                    <span>Live Monitor</span>
+                </a>
+                <a href="#" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <p id="userName">Loading...</p>
+                        <small>Caretaker</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Live Monitoring</h1>
+                <div class="header-actions">
+                    <select id="patientSelect" class="form-select">
+                        <option value="">Select Patient to Monitor</option>
+                    </select>
+                </div>
+            </header>
+
+            <!-- Monitoring Dashboard -->
+            <div class="monitor-grid">
+                <!-- Detection Status Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Detection Status</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <div class="status-icon green" id="fallStatus">
+                                    <i class="fas fa-person-falling"></i>
+                                </div>
+                                <div>
+                                    <h3>Fall Detection</h3>
+                                    <p id="fallStatusText">Waiting for detector...</p>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-icon" id="gestureStatus">
+                                    <i class="fas fa-hand-peace"></i>
+                                </div>
+                                <div>
+                                    <h3>Gesture Detection</h3>
+                                    <p id="gestureStatusText">Not running</p>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-icon" id="voiceStatus">
+                                    <i class="fas fa-microphone-alt"></i>
+                                </div>
+                                <div>
+                                    <h3>Voice Detection</h3>
+                                    <p id="voiceStatusText">Not running</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>How to Start Detection</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="instruction-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div>
+                                    <h3>Run the detector</h3>
+                                    <p>Open terminal and run:</p>
+                                    <code>cd detector && python guardian_fall.py</code>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div>
+                                    <h3>Select patient ID</h3>
+                                    <p>Make sure the patient ID in the detector matches the selected patient</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div>
+                                    <h3>Monitor alerts</h3>
+                                    <p>Alerts will appear here and be sent to emergency contacts</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Detection Events -->
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2>Recent Detection Events</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="data-table" id="detectionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Type</th>
+                                    <th>Confidence</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detectionsList">
+                                <tr>
+                                    <td colspan="5" class="text-center">No detection events yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .status-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .status-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .status-icon.green {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-icon.red {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-icon.yellow {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .instruction-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        code {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-top: 0.5rem;
+        }
+
+        .form-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .monitor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        document.getElementById('userName').textContent = user.full_name || 'User';
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        });
+
+        // Load patients for dropdown
+        async function loadPatients() {
+            try {
+                const response = await fetch('/api/patients', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const patients = await response.json();
+                
+                const select = document.getElementById('patientSelect');
+                select.innerHTML = '<option value="">Select Patient to Monitor</option>';
+                
+                patients.forEach(patient => {
+                    select.innerHTML += `<option value="${patient.id}">${patient.full_name}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading patients:', error);
+            }
+        }
+
+        // Load detection events
+        async function loadDetections() {
+            try {
+                const response = await fetch('/api/detections', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const detections = await response.json();
+                
+                const tbody = document.getElementById('detectionsList');
+                
+                if (detections.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No detection events yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = detections.map(d => `
+                    <tr>
+                        <td>${new Date(d.created_at).toLocaleString()}</td>
+                        <td>${d.patient_name}</td>
+                        <td>
+                            <span class="badge" style="background: ${getEventColor(d.event_type)}">
+                                ${d.event_type}
+                            </span>
+                        </td>
+                        <td>${d.confidence ? (d.confidence * 100).toFixed(1) + '%' : '-'}</td>
+                        <td>${d.details || '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading detections:', error);
+            }
+        }
+
+        function getEventColor(type) {
+            const colors = {
+                'fall': '#c62828',
+                'gesture': '#e65100',
+                'voice': '#2e7d32',
+                'manual': '#1976d2',
+                'test': '#6c757d'
+            };
+            return colors[type] || '#6c757d';
+        }
+
+        // Poll for updates
+        setInterval(() => {
+            loadDetections();
+        }, 5000);
+
+        // Initialize
+        loadPatients();
+        loadDetections();
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Guardian Net</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-shield-alt"></i>
+                <span>Guardian Net</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard.html" class="active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/patients.html">
+                    <i class="fas fa-users"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="/monitor.html">
+                    <i class="fas fa-video"></i>
+                    <span>Live Monitor</span>
+                </a>
+                <a href="#" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <p id="userName">Loading...</p>
+                        <small>Caretaker</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.location.href='/patients.html'">
+                        <i class="fas fa-plus"></i>
+                        Add Patient
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsContainer">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalPatients">0</h3>
+                        <p>Total Patients</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalAlerts">0</h3>
+                        <p>Total Alerts</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="todayAlerts">0</h3>
+                        <p>Today's Alerts</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="todayDetections">0</h3>
+                        <p>Today's Detections</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Patients -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Patients</h2>
+                    <a href="/patients.html" class="btn btn-secondary">View All</a>
+                </div>
+                <div class="card-body">
+                    <table class="data-table" id="patientsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Emergency Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsList">
+                            <tr>
+                                <td colspan="5" class="text-center">Loading patients...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Alerts</h2>
+                </div>
+                <div class="card-body">
+                    <table class="data-table" id="alertsTable">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alertsList">
+                            <tr>
+                                <td colspan="5" class="text-center">No alerts yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Emergency Alert</h2>
+                <button class="close-btn" onclick="closeModal('alertModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="alertForm">
+                    <input type="hidden" id="alertPatientId">
+                    <div class="form-group">
+                        <label>Patient</label>
+                        <p id="alertPatientName" class="form-text"></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact</label>
+                        <p id="alertContactInfo" class="form-text"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="alertMessage">Custom Message (Optional)</label>
+                        <textarea id="alertMessage" rows="3" placeholder="Enter custom emergency message"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('alertModal')">Cancel</button>
+                <button class="btn btn-danger" onclick="sendEmergencyAlert()">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Send Emergency Alert
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>
