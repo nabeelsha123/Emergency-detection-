@@ -12,7 +12,7 @@ class GuardianAlertSender:
     def __init__(self, server_url="http://localhost:3000", patient_id=1):
         """
         Initialize the alert sender
-        
+        1
         Args:
             server_url: URL of the Guardian Net backend
             patient_id: ID of the patient being monitored (from database)

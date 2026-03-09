@@ -1,14 +1,11 @@
-// Check authentication
+// Patients management functionality
 const token = localStorage.getItem('token');
-if (!token) {
-    window.location.href = '/login.html';
-}
+if (!token) window.location.href = '/login.html';
 
-// Set user info
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 document.getElementById('userName').textContent = user.full_name || 'User';
 
-// Logout functionality
+// Logout handler
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
@@ -25,9 +22,8 @@ async function loadPatients() {
         const patients = await response.json();
         
         const tbody = document.getElementById('patientsList');
-        
         if (patients.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No patients added yet. Click "Add New Patient" to get started.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">No patients added</td></tr>';
             return;
         }
         
@@ -38,48 +34,40 @@ async function loadPatients() {
                 <td>${patient.gender || '-'}</td>
                 <td>${patient.emergency_contact_name || '-'}</td>
                 <td>${patient.emergency_contact_phone || '-'}</td>
-                <td>
-                    <div class="actions">
-                        <button class="btn-icon" onclick="editPatient(${patient.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon" onclick="sendAlert(${patient.id}, '${patient.full_name}', '${patient.emergency_contact_name}', '${patient.emergency_contact_phone}')" title="Send Alert">
-                            <i class="fas fa-exclamation-triangle" style="color: #c62828;"></i>
-                        </button>
-                        <button class="btn-icon danger" onclick="deletePatient(${patient.id})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                <td>${patient.room_number || '-'}</td>
+                <td class="actions">
+                    <button class="btn-icon" onclick="editPatient(${patient.id})" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn-icon" onclick="deletePatient(${patient.id})" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </td>
             </tr>
         `).join('');
     } catch (error) {
         console.error('Error loading patients:', error);
-        document.getElementById('patientsList').innerHTML = 
-            '<tr><td colspan="6" class="text-center">Error loading patients</td></tr>';
     }
 }
 
 // Search functionality
-document.getElementById('searchPatient').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
+document.getElementById('searchPatient')?.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
     const rows = document.querySelectorAll('#patientsList tr');
-    
     rows.forEach(row => {
         const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(searchTerm) ? '' : 'none';
+        row.style.display = text.includes(term) ? '' : 'none';
     });
 });
 
-// Open add patient modal
-function openAddPatientModal() {
-    document.getElementById('modalTitle').textContent = 'Add New Patient';
+// Modal functions
+function openAddModal() {
+    document.getElementById('modalTitle').textContent = 'Add Patient';
     document.getElementById('patientForm').reset();
     document.getElementById('patientId').value = '';
-    openModal('patientModal');
+    document.getElementById('patientModal').classList.add('show');
 }
 
-// Edit patient
 async function editPatient(id) {
     try {
         const response = await fetch(`/api/patients/${id}`, {
@@ -87,48 +75,43 @@ async function editPatient(id) {
         });
         const patient = await response.json();
         
-        if (response.ok) {
-            document.getElementById('modalTitle').textContent = 'Edit Patient';
-            document.getElementById('patientId').value = patient.id;
-            document.getElementById('fullName').value = patient.full_name || '';
-            document.getElementById('age').value = patient.age || '';
-            document.getElementById('gender').value = patient.gender || '';
-            document.getElementById('medicalConditions').value = patient.medical_conditions || '';
-            document.getElementById('emergencyName').value = patient.emergency_contact_name || '';
-            document.getElementById('emergencyPhone').value = patient.emergency_contact_phone || '';
-            document.getElementById('emergencyRelation').value = patient.emergency_contact_relation || '';
-            document.getElementById('address').value = patient.address || '';
-            
-            openModal('patientModal');
-        } else {
-            alert(patient.error || 'Failed to load patient');
-        }
+        document.getElementById('modalTitle').textContent = 'Edit Patient';
+        document.getElementById('patientId').value = patient.id;
+        document.getElementById('fullName').value = patient.full_name || '';
+        document.getElementById('age').value = patient.age || '';
+        document.getElementById('gender').value = patient.gender || '';
+        document.getElementById('medical_conditions').value = patient.medical_conditions || '';
+        document.getElementById('emergencyName').value = patient.emergency_contact_name || '';
+        document.getElementById('emergencyPhone').value = patient.emergency_contact_phone || '';
+        document.getElementById('emergencyRelation').value = patient.emergency_contact_relation || '';
+        document.getElementById('room_number').value = patient.room_number || '';
+        
+        document.getElementById('patientModal').classList.add('show');
     } catch (error) {
         console.error('Error loading patient:', error);
-        alert('Connection error');
+        alert('Failed to load patient details');
     }
 }
 
-// Save patient
 async function savePatient() {
     const patientId = document.getElementById('patientId').value;
     const patientData = {
         full_name: document.getElementById('fullName').value,
         age: document.getElementById('age').value,
         gender: document.getElementById('gender').value,
-        medical_conditions: document.getElementById('medicalConditions').value,
+        medical_conditions: document.getElementById('medical_conditions').value,
         emergency_contact_name: document.getElementById('emergencyName').value,
         emergency_contact_phone: document.getElementById('emergencyPhone').value,
         emergency_contact_relation: document.getElementById('emergencyRelation').value,
-        address: document.getElementById('address').value
+        room_number: document.getElementById('room_number').value
     };
-    
+
     // Validate required fields
     if (!patientData.full_name || !patientData.emergency_contact_name || !patientData.emergency_contact_phone) {
         alert('Please fill in all required fields');
         return;
     }
-    
+
     try {
         const url = patientId ? `/api/patients/${patientId}` : '/api/patients';
         const method = patientId ? 'PUT' : 'POST';
@@ -142,26 +125,21 @@ async function savePatient() {
             body: JSON.stringify(patientData)
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
-            alert(patientId ? 'Patient updated successfully' : 'Patient added successfully');
-            closeModal('patientModal');
+            closeModal();
             loadPatients();
         } else {
-            alert(data.error || 'Failed to save patient');
+            const error = await response.json();
+            alert(error.error || 'Failed to save patient');
         }
     } catch (error) {
         console.error('Error saving patient:', error);
-        alert('Connection error');
+        alert('Failed to save patient');
     }
 }
 
-// Delete patient
 async function deletePatient(id) {
-    if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
-        return;
-    }
+    if (!confirm('Are you sure you want to delete this patient?')) return;
     
     try {
         const response = await fetch(`/api/patients/${id}`, {
@@ -169,87 +147,36 @@ async function deletePatient(id) {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
-            alert('Patient deleted successfully');
             loadPatients();
         } else {
-            alert(data.error || 'Failed to delete patient');
+            alert('Failed to delete patient');
         }
     } catch (error) {
         console.error('Error deleting patient:', error);
-        alert('Connection error');
+        alert('Failed to delete patient');
     }
 }
 
-// Send emergency alert
-let currentAlertPatient = null;
-
-function sendAlert(id, name, contactName, contactPhone) {
-    currentAlertPatient = { id, name, contactName, contactPhone };
-    document.getElementById('alertPatientId').value = id;
-    document.getElementById('alertPatientName').textContent = name;
-    document.getElementById('alertContactInfo').textContent = `${contactName} (${contactPhone})`;
-    document.getElementById('alertMessage').value = '';
-    openModal('alertModal');
-}
-
-async function sendEmergencyAlert() {
-    if (!currentAlertPatient) return;
-    
-    const message = document.getElementById('alertMessage').value || 
-        `🚨 EMERGENCY! ${currentAlertPatient.name} needs immediate help!`;
-    
-    try {
-        const response = await fetch('/api/send-emergency', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                patient_id: currentAlertPatient.id,
-                message: message
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            alert('Emergency alert sent successfully!');
-            closeModal('alertModal');
-        } else {
-            alert(data.error || 'Failed to send alert');
-        }
-    } catch (error) {
-        console.error('Error sending alert:', error);
-        alert('Connection error. Please try again.');
-    }
-}
-
-// Modal functions
-function openModal(modalId) {
-    document.getElementById(modalId).classList.add('show');
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('show');
+function closeModal() {
+    document.getElementById('patientModal').classList.remove('show');
 }
 
 // Close modal when clicking outside
 window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.classList.remove('show');
+    const modal = document.getElementById('patientModal');
+    if (event.target === modal) {
+        closeModal();
     }
 };
 
-// Check for view parameter in URL
+// Check for patient ID in URL (view mode)
 const urlParams = new URLSearchParams(window.location.search);
 const viewId = urlParams.get('view');
 if (viewId) {
-    editPatient(viewId);
+    // Highlight or show details of specific patient
+    console.log('Viewing patient:', viewId);
 }
 
-// Initialize
+// Load patients on page load
 loadPatients();
